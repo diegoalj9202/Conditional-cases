@@ -98,6 +98,48 @@
         /* Headers & Instructions */
         header { margin-bottom: 2rem; }
         h1 { margin: 0 0 0.5rem 0; font-size: 1.8rem; }
+        
+        /* Name Input Styling */
+        .student-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .student-info label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+        }
+        .student-info input {
+            padding: 0.6rem;
+            border: 1px solid #93c5fd;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .student-info input:focus {
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            border-color: var(--primary);
+        }
+        .student-info input.error {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
         .instructions-card {
             background: #fff;
             padding: 1.5rem;
@@ -151,13 +193,17 @@
         .btn-clear { color: #dc2626; border-color: #fecaca; background: #fef2f2; margin-left: auto; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* Capture Wrapper */
+        #capture-wrapper {
+            background: white;
+            padding: 1rem;
+        }
+        
         #case-text {
             font-size: 1.15rem;
             line-height: 1.8;
             color: #374151;
             min-height: 150px;
-            padding: 1rem; /* Added padding for better screenshots */
-            background: white;
         }
 
         /* Highlights */
@@ -247,6 +293,11 @@
         <header>
             <h1 id="case-title">Case Title</h1>
             
+            <div class="student-info">
+                <label for="student-name">Your Name (Required for Evidence):</label>
+                <input type="text" id="student-name" placeholder="Enter your full name here..." oninput="this.classList.remove('error')">
+            </div>
+
             <div class="instructions-card">
                 <h3>Activity Steps</h3>
                 <ul class="step-list">
@@ -269,9 +320,19 @@
                 <button class="btn btn-hyp-past" onclick="applyHighlight('past')">Hyp-Past (Type 3)</button>
                 <button class="btn btn-clear" onclick="clearHighlights()">Reset Highlights</button>
             </div>
-            <article id="case-text">
-                <!-- Text injected by JS -->
-            </article>
+            <!-- Wrapped for Screenshot -->
+            <div id="capture-wrapper">
+                <div id="capture-header" style="display:none; border-bottom: 2px solid #e5e7eb; margin-bottom: 1rem; padding-bottom: 0.5rem;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #1e40af;">Conditionals Analysis Evidence</div>
+                    <div style="color: #4b5563; margin-top:0.25rem;">
+                        Student: <span id="capture-student-name" style="font-weight:600; color: #111;"></span> 
+                        | Case: <span id="capture-case-title" style="font-weight:600;"></span>
+                    </div>
+                </div>
+                <article id="case-text">
+                    <!-- Text injected by JS -->
+                </article>
+            </div>
         </section>
 
         <!-- Replaced Section: Download Evidence -->
@@ -365,6 +426,7 @@
     const caseTitle = document.getElementById('case-title');
     const caseText = document.getElementById('case-text');
     const tooltip = document.getElementById('tooltip');
+    const studentNameInput = document.getElementById('student-name');
 
     // --- Initialization ---
     function init() {
@@ -511,8 +573,24 @@
 
     // --- Feature: Download Evidence ---
     function downloadEvidence() {
+        const studentName = studentNameInput.value.trim();
+        if (!studentName) {
+            alert("Please enter your name in the top box before downloading evidence.");
+            studentNameInput.focus();
+            studentNameInput.classList.add('error');
+            return;
+        }
+
         const c = cases[appState.currentCaseIndex];
-        const element = document.getElementById('case-text');
+        const wrapper = document.getElementById('capture-wrapper');
+        const header = document.getElementById('capture-header');
+        const sNameSpan = document.getElementById('capture-student-name');
+        const cTitleSpan = document.getElementById('capture-case-title');
+
+        // Prepare info for screenshot
+        sNameSpan.textContent = studentName;
+        cTitleSpan.textContent = c.title;
+        header.style.display = "block"; // Show header for screenshot
         
         // visual feedback
         const btn = document.getElementById('btn-evidence');
@@ -520,20 +598,25 @@
         btn.textContent = "Generating...";
         btn.disabled = true;
 
-        html2canvas(element, {
+        html2canvas(wrapper, {
             backgroundColor: "#ffffff", // ensure white background
             scale: 2 // better quality
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `Evidence_${c.title.replace(/\s+/g, '_')}.png`;
+            const safeName = studentName.replace(/\s+/g, '_').substring(0, 15);
+            const safeCase = c.title.split('—')[0].trim().replace(/\s+/g, '');
+            link.download = `Evidence_${safeName}_${safeCase}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
             
+            // Cleanup
+            header.style.display = "none";
             btn.textContent = originalText;
             btn.disabled = false;
         }).catch(err => {
             console.error(err);
             alert("Could not generate image. Browser might not support this feature.");
+            header.style.display = "none";
             btn.textContent = originalText;
             btn.disabled = false;
         });
@@ -541,11 +624,20 @@
 
     // --- Feature: Export ---
     function exportData() {
+        const studentName = studentNameInput.value.trim();
+        
         saveCurrentState(); // Ensure latest state is captured
-        const dataStr = JSON.stringify(appState.userData, null, 2);
+        
+        const exportPayload = {
+            studentName: studentName || "Anonymous",
+            timestamp: new Date().toISOString(),
+            casesData: appState.userData
+        };
+
+        const dataStr = JSON.stringify(exportPayload, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
         
-        const exportFileDefaultName = 'efl_conditionals_lab_work.json';
+        const exportFileDefaultName = `efl_conditionals_lab_${studentName ? studentName.replace(/\s+/g, '_') : 'work'}.json`;
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
         linkElement.setAttribute('download', exportFileDefaultName);
