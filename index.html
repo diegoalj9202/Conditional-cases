@@ -8,17 +8,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
+            --primary: #4f46e5;       /* Indigo 600 */
+            --primary-light: #818cf8; /* Indigo 400 */
+            --primary-dark: #3730a3;  /* Indigo 800 */
             
-            /* Highlight Colors */
-            --hl-real-bg: #dcfce7; /* Green 100 */
-            --hl-real-text: #166534; /* Green 800 */
+            --bg-body: #f0f2f5;       /* Very light gray/blue */
+            --bg-card: #ffffff;
+            
+            --text-main: #1e293b;     /* Slate 800 */
+            --text-muted: #64748b;    /* Slate 500 */
+            
+            --border: #cbd5e1;        /* Slate 300 */
+            --shadow-color: rgba(30, 41, 59, 0.1);
+            
+            /* Highlight Colors - Softer Pastels */
+            --hl-real-bg: #d1fae5;    /* Emerald 100 */
+            --hl-real-text: #065f46;  /* Emerald 800 */
             --hl-hyp-now-bg: #dbeafe; /* Blue 100 */
             --hl-hyp-now-text: #1e40af; /* Blue 800 */
             --hl-hyp-past-bg: #f3e8ff; /* Purple 100 */
@@ -26,7 +31,7 @@
         }
 
         /* Reset & Base */
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
@@ -43,43 +48,86 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            width: 100%;
         }
 
-        /* Sidebar */
+        /* Sidebar (Desktop Default) */
         aside {
-            width: 260px;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
+            width: 280px;
+            background: var(--bg-body); /* Match body for floating feel */
+            padding: 1.5rem 1rem;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
+            z-index: 20;
         }
+
         .brand {
-            padding: 1.5rem;
+            padding: 0 0.5rem 1.5rem 0.5rem;
             font-weight: 800;
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             color: var(--primary);
-            border-bottom: 1px solid var(--border);
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
+
         .nav-list {
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
         }
+
         .nav-item {
-            padding: 1rem 1.5rem;
+            padding: 0.8rem 1.2rem;
             cursor: pointer;
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
+            background: var(--bg-card);
+            border-radius: 16px;
             font-size: 0.95rem;
-        }
-        .nav-item:hover { background-color: #f9fafb; }
-        .nav-item.active {
-            background-color: #eff6ff;
-            border-left: 4px solid var(--primary);
             font-weight: 600;
-            color: var(--primary-dark);
+            color: var(--text-muted);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid transparent;
+            
+            /* Soft 3D Effect */
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+                0 2px 4px -1px rgba(0, 0, 0, 0.03),
+                0 4px 0 var(--border); /* Bottom edge */
+            transform: translateY(0);
+        }
+
+        .nav-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 8px -1px rgba(0, 0, 0, 0.08), 
+                0 4px 0 var(--border);
+        }
+
+        .nav-item:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 var(--border);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 
+                0 4px 10px rgba(79, 70, 229, 0.4),
+                0 4px 0 var(--primary-dark);
+            border-color: transparent;
+        }
+        .nav-item.active:hover {
+             transform: translateY(-1px);
+        }
+        .nav-item.active:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 var(--primary-dark);
         }
 
         /* Main Content */
@@ -88,50 +136,223 @@
             padding: 2rem;
             overflow-y: auto;
             position: relative;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+            /* Smooth scroll behavior */
+            scroll-behavior: smooth;
         }
 
         /* Headers & Instructions */
         header { margin-bottom: 2rem; }
-        h1 { margin: 0 0 0.5rem 0; font-size: 1.8rem; }
+        h1 { margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
         
-        /* Name Input Styling */
+        /* Name Input Styling - Floating Card */
         .student-info {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            padding: 1rem;
-            border-radius: 8px;
+            background: white;
+            padding: 1.2rem;
+            border-radius: 20px;
             margin-bottom: 1.5rem;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            box-shadow: 0 10px 25px -5px var(--shadow-color);
+            border: 1px solid rgba(255,255,255,0.8);
         }
         .student-info label {
-            font-weight: 600;
-            color: var(--primary-dark);
+            font-weight: 700;
+            color: var(--primary);
             font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .student-info input {
-            padding: 0.6rem;
-            border: 1px solid #93c5fd;
-            border-radius: 4px;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
             font-size: 1rem;
             outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
         }
         .student-info input:focus {
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            background: white;
             border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
         .student-info input.error {
-            border-color: #dc2626;
+            border-color: #ef4444;
             background-color: #fef2f2;
             animation: shake 0.5s;
         }
 
+        /* Instructions - Floating Card */
+        .instructions-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px var(--shadow-color);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .instructions-card h3 { 
+            margin-top: 0; 
+            color: var(--primary-dark); 
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .step-list { margin: 0; padding-left: 1.2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+        .step-list li { margin-bottom: 0.5rem; line-height: 1.5; }
+        .step-list strong { color: var(--primary); }
+
+        /* Reading Area */
+        .reading-section {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            position: relative;
+            border: 1px solid rgba(255,255,255,1);
+        }
+        
+        /* Floating Toolbar */
+        .toolbar {
+            position: sticky;
+            top: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.8rem;
+            border-radius: 16px;
+            margin: -1rem -1rem 1.5rem -1rem;
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* 3D Buttons */
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            position: relative;
+            top: 0;
+            
+            /* The 3D effect */
+            box-shadow: 0 5px 0 rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .btn:active {
+            top: 3px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+
+        /* Specific Button Colors */
+        .btn-real { background: var(--hl-real-bg); color: var(--hl-real-text); box-shadow: 0 5px 0 #86efac; }
+        .btn-real:active { box-shadow: 0 2px 0 #86efac; }
+        
+        .btn-hyp-now { background: var(--hl-hyp-now-bg); color: var(--hl-hyp-now-text); box-shadow: 0 5px 0 #93c5fd; }
+        .btn-hyp-now:active { box-shadow: 0 2px 0 #93c5fd; }
+        
+        .btn-hyp-past { background: var(--hl-hyp-past-bg); color: var(--hl-hyp-past-text); box-shadow: 0 5px 0 #d8b4fe; }
+        .btn-hyp-past:active { box-shadow: 0 2px 0 #d8b4fe; }
+        
+        .btn-clear { background: #fee2e2; color: #b91c1c; box-shadow: 0 5px 0 #fca5a5; margin-left: auto; }
+        .btn-clear:active { box-shadow: 0 2px 0 #fca5a5; }
+        
+        .btn-primary { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 5px 0 var(--primary-dark); 
+        }
+        .btn-primary:active { box-shadow: 0 2px 0 var(--primary-dark); }
+        .btn-primary:hover { filter: brightness(1.1); }
+
+        /* Capture Wrapper */
+        #capture-wrapper {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px; /* Smooth corners in screenshot */
+        }
+        
+        #case-text {
+            font-size: 1.25rem;
+            line-height: 1.9;
+            color: #334155;
+            min-height: 150px;
+        }
+
+        /* Highlights - Soft rounded edges */
+        .highlight-real { background-color: var(--hl-real-bg); color: var(--hl-real-text); border-radius: 6px; padding: 2px 4px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+        .highlight-now { background-color: var(--hl-hyp-now-bg); color: var(--hl-hyp-now-text); border-radius: 6px; padding: 2px 4px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+        .highlight-past { background-color: var(--hl-hyp-past-bg); color: var(--hl-hyp-past-text); border-radius: 6px; padding: 2px 4px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+
+        /* Evidence Section */
+        .evidence-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px var(--shadow-color);
+        }
+
+        /* Footer / Actions */
+        .actions-bar {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            padding-bottom: 2rem;
+        }
+        .actions-bar .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            background: #1e293b;
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            max-width: 280px;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            pointer-events: auto;
+            transform: translateY(10px);
+            animation: fadeIn 0.2s ease forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        #tooltip::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: transparent transparent #1e293b transparent;
+        }
+        #tooltip a { color: #60a5fa; text-decoration: none; display: block; margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; }
+
+        /* Animation Keyframes */
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -140,132 +361,81 @@
             100% { transform: translateX(0); }
         }
 
-        .instructions-card {
-            background: #fff;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
-        }
-        .instructions-card h3 { margin-top: 0; color: var(--primary); }
-        .step-list { margin: 0; padding-left: 1.2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-        .step-list li { margin-bottom: 0.5rem; }
-
-        /* Reading Area */
-        .reading-section {
-            background: var(--bg-card);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-            position: relative;
-        }
-        
-        .toolbar {
-            position: sticky;
-            top: 0;
-            background: rgba(255,255,255,0.95);
-            padding: 0.5rem;
-            border-bottom: 1px solid var(--border);
-            margin: -2rem -2rem 1rem -2rem;
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            z-index: 10;
-            backdrop-filter: blur(4px);
-        }
-
-        .btn {
-            padding: 0.4rem 0.8rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn:hover { filter: brightness(0.95); }
-        .btn-real { background: var(--hl-real-bg); color: var(--hl-real-text); border-color: var(--hl-real-bg); }
-        .btn-hyp-now { background: var(--hl-hyp-now-bg); color: var(--hl-hyp-now-text); border-color: var(--hl-hyp-now-bg); }
-        .btn-hyp-past { background: var(--hl-hyp-past-bg); color: var(--hl-hyp-past-text); border-color: var(--hl-hyp-past-bg); }
-        .btn-clear { color: #dc2626; border-color: #fecaca; background: #fef2f2; margin-left: auto; }
-        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
-
-        /* Capture Wrapper */
-        #capture-wrapper {
-            background: white;
-            padding: 1rem;
-        }
-        
-        #case-text {
-            font-size: 1.15rem;
-            line-height: 1.8;
-            color: #374151;
-            min-height: 150px;
-        }
-
-        /* Highlights */
-        .highlight-real { background-color: var(--hl-real-bg); color: var(--hl-real-text); border-radius: 3px; padding: 2px 0; cursor: pointer; }
-        .highlight-now { background-color: var(--hl-hyp-now-bg); color: var(--hl-hyp-now-text); border-radius: 3px; padding: 2px 0; cursor: pointer; }
-        .highlight-past { background-color: var(--hl-hyp-past-bg); color: var(--hl-hyp-past-text); border-radius: 3px; padding: 2px 0; cursor: pointer; }
-
-        /* Evidence Section */
-        .evidence-section {
-            display: flex;
-            justify-content: center;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #fff;
-            border-radius: 8px;
-            border: 1px dashed var(--border);
-        }
-
-        /* Footer / Actions */
-        .actions-bar {
-            margin-top: 2rem;
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            border-top: 1px solid var(--border);
-            padding-top: 1rem;
-        }
-
-        /* Tooltip */
-        #tooltip {
-            position: absolute;
-            background: #1f2937;
-            color: white;
-            padding: 0.8rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            max-width: 250px;
-            z-index: 100;
-            display: none;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-            pointer-events: auto;
-        }
-        #tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #1f2937 transparent transparent transparent;
-        }
-        #tooltip a { color: #60a5fa; text-decoration: none; display: block; margin-top: 0.5rem; font-size: 0.8rem; }
-        #tooltip a:hover { text-decoration: underline; }
-
-        /* Mobile Responsive */
+        /* --- MOBILE RESPONSIVE IMPROVEMENTS --- */
         @media (max-width: 768px) {
-            .app-container { flex-direction: column; overflow-y: scroll; }
-            aside { width: 100%; max-height: 150px; border-right: none; border-bottom: 1px solid var(--border); }
-            main { overflow: visible; padding: 1rem; }
-            .step-list { grid-template-columns: 1fr; }
-            .toolbar { flex-wrap: wrap; }
+            .app-container { 
+                flex-direction: column; 
+                overflow-y: scroll;
+                height: auto;
+            }
+            
+            /* Horizontal Scroll Nav for Mobile */
+            aside { 
+                width: 100%; 
+                max-height: none;
+                padding: 1rem;
+                background: var(--bg-body);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            }
+            
+            .brand {
+                font-size: 1.2rem;
+                padding-bottom: 0.5rem;
+            }
+
+            .nav-list {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 1rem; /* Space for shadow/scroll */
+                gap: 0.8rem;
+                /* Hide scrollbar visually but allow scroll */
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none;  /* IE 10+ */
+            }
+            .nav-list::-webkit-scrollbar { 
+                display: none; /* Chrome/Safari */
+            }
+
+            .nav-item {
+                flex: 0 0 auto; /* Don't shrink, keep width based on content */
+                white-space: nowrap;
+                border-radius: 50px; /* Pill shape */
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            /* Main Adjustments */
+            main { 
+                overflow: visible; 
+                padding: 1rem; 
+            }
+            
+            .step-list { grid-template-columns: 1fr; gap: 1rem; }
+            
+            .reading-section {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .toolbar {
+                margin: -1rem -1rem 1rem -1rem;
+                border-radius: 0 0 16px 16px;
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 0.8rem;
+            }
+            .toolbar span { display: none; } /* Hide label on mobile to save space */
+            
+            .btn {
+                white-space: nowrap;
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            h1 { font-size: 1.5rem; }
         }
 
         /* Print Styles */
@@ -274,6 +444,7 @@
             body, .app-container, main { height: auto; overflow: visible; background: white; }
             main { padding: 0; }
             .reading-section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+            .student-info { box-shadow: none; border: 1px solid #ccc; }
         }
     </style>
 </head>
@@ -282,7 +453,7 @@
 <div class="app-container">
     <!-- Navigation Sidebar -->
     <aside id="sidebar">
-        <div class="brand">EFL Lab</div>
+        <div class="brand">🧬 EFL Lab</div>
         <ul class="nav-list" id="nav-list">
             <!-- Items injected by JS -->
         </ul>
@@ -294,16 +465,16 @@
             <h1 id="case-title">Case Title</h1>
             
             <div class="student-info">
-                <label for="student-name">Your Name (Required for Evidence):</label>
+                <label for="student-name">Your Name (Required):</label>
                 <input type="text" id="student-name" placeholder="Enter your full name here..." oninput="this.classList.remove('error')">
             </div>
 
             <div class="instructions-card">
                 <h3>Activity Steps</h3>
                 <ul class="step-list">
-                    <li><strong>Step A: Extract</strong><br>Read and highlight conditional sentences. Copy them into your notebook.</li>
-                    <li><strong>Step B: Analyze</strong><br>In your notebook, classify by type (Real, Hyp-Now, Hyp-Past) and identify the principle.</li>
-                    <li><strong>Step C: Evidence</strong><br>Click 'Download Evidence' to save an image of your highlighted text.</li>
+                    <li><strong>Step A: Extract</strong><br>Read and highlight conditional sentences using the color tools. Copy them into your notebook.</li>
+                    <li><strong>Step B: Analyze</strong><br>In your notebook, classify each one by type (Real, Hyp-Now, Hyp-Past) and identify the principle.</li>
+                    <li><strong>Step C: Evidence</strong><br>Click 'Download Evidence' below to save an image of your highlighted text.</li>
                 </ul>
             </div>
         </header>
@@ -315,15 +486,15 @@
         <section class="reading-section">
             <div class="toolbar">
                 <span>Highlight Tool:</span>
-                <button class="btn btn-real" onclick="applyHighlight('real')">Real (Type 0/1)</button>
-                <button class="btn btn-hyp-now" onclick="applyHighlight('now')">Hyp-Now (Type 2)</button>
-                <button class="btn btn-hyp-past" onclick="applyHighlight('past')">Hyp-Past (Type 3)</button>
-                <button class="btn btn-clear" onclick="clearHighlights()">Reset Highlights</button>
+                <button class="btn btn-real" onclick="applyHighlight('real')">Real (0/1)</button>
+                <button class="btn btn-hyp-now" onclick="applyHighlight('now')">Hyp-Now (2)</button>
+                <button class="btn btn-hyp-past" onclick="applyHighlight('past')">Hyp-Past (3)</button>
+                <button class="btn btn-clear" onclick="clearHighlights()">Reset</button>
             </div>
             <!-- Wrapped for Screenshot -->
             <div id="capture-wrapper">
                 <div id="capture-header" style="display:none; border-bottom: 2px solid #e5e7eb; margin-bottom: 1rem; padding-bottom: 0.5rem;">
-                    <div style="font-size: 1.2rem; font-weight: bold; color: #1e40af;">Conditionals Analysis Evidence</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #3730a3;">Conditionals Analysis Evidence</div>
                     <div style="color: #4b5563; margin-top:0.25rem;">
                         Student: <span id="capture-student-name" style="font-weight:600; color: #111;"></span> 
                         | Case: <span id="capture-case-title" style="font-weight:600;"></span>
@@ -337,7 +508,7 @@
 
         <!-- Replaced Section: Download Evidence -->
         <div class="evidence-section">
-            <button id="btn-evidence" class="btn btn-primary" onclick="downloadEvidence()" style="font-size: 1rem; padding: 0.8rem 1.5rem;">
+            <button id="btn-evidence" class="btn btn-primary" onclick="downloadEvidence()">
                 📸 Download Evidence (PNG)
             </button>
         </div>
@@ -433,10 +604,10 @@
         renderSidebar();
         loadCase(0);
         
-        // Setup text interactions
+        // Setup text interactions - SWITCHED TO CLICK
         document.addEventListener('click', handleGlobalClick);
-        // Tooltip logic
-        caseText.addEventListener('mouseup', handleTextClick);
+        // Tooltip logic - SWITCHED TO CLICK
+        caseText.addEventListener('click', handleTextClick);
     }
 
     // --- Core Navigation ---
@@ -445,11 +616,18 @@
         cases.forEach((c, index) => {
             const li = document.createElement('li');
             li.className = 'nav-item';
+            // Simplify text for mobile view (or desktop if needed, though usually fine)
             li.textContent = c.title;
             li.onclick = () => switchCase(index);
             if(index === appState.currentCaseIndex) li.classList.add('active');
             sidebarList.appendChild(li);
         });
+        
+        // Auto-scroll active item into view on mobile
+        if(window.innerWidth <= 768) {
+            const active = sidebarList.querySelector('.active');
+            if(active) active.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        }
     }
 
     function switchCase(index) {
@@ -515,40 +693,67 @@
 
     // --- Feature: Tooltip & Word Detection ---
     function handleTextClick(e) {
-        // Wait for selection to process (in case user is highlighting)
+        // Debounce just in case
         setTimeout(() => {
             const s = window.getSelection();
             if(!s.isCollapsed) return; // User is highlighting, don't show tooltip
 
-            // Crude word detection
-            const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-            if (!range) return;
-            
-            // Expand range to word
-            if (range.startContainer.nodeType === Node.TEXT_NODE) {
-                const textNode = range.startContainer;
-                const text = textNode.textContent;
-                let start = range.startOffset;
-                let end = range.startOffset;
+            let textNode = null;
+            let offset = 0;
 
-                // Move bounds to find whitespace
-                while (start > 0 && /\w/.test(text.charAt(start - 1))) start--;
-                while (end < text.length && /\w/.test(text.charAt(end))) end++;
-
-                const word = text.slice(start, end).toLowerCase().replace(/[.,]/g, '');
-                
-                // Logic for multi-word connectors (basic check of neighbours)
-                let connectorKey = word;
-                let fullPhrase = word;
-
-                // Check simple dictionary
-                if (connectorsDB[word]) {
-                    showTooltip(e.pageX, e.pageY, connectorsDB[word], fullPhrase);
-                } 
-                // Handle "as long as", "provided that" - if user clicked key word
-                else if (word === 'long' && text.includes('as long as')) {
-                     showTooltip(e.pageX, e.pageY, connectorsDB['as'], 'as long as');
+            // Cross-browser hit testing
+            if (document.caretRangeFromPoint) {
+                // Standard (Chrome, Safari, Edge)
+                const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                if (range) {
+                    textNode = range.startContainer;
+                    offset = range.startOffset;
                 }
+            } else if (document.caretPositionFromPoint) {
+                // Firefox
+                const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+                if (pos) {
+                    textNode = pos.offsetNode;
+                    offset = pos.offset;
+                }
+            }
+
+            // Safety check: ensure we hit a text node
+            if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+
+            // Expand range to word
+            const text = textNode.textContent;
+            let start = offset;
+            let end = offset;
+
+            // Move bounds to find whitespace or punctuation
+            while (start > 0 && /\w/.test(text.charAt(start - 1))) start--;
+            while (end < text.length && /\w/.test(text.charAt(end))) end++;
+
+            const word = text.slice(start, end).toLowerCase().replace(/[.,;:!?]/g, '');
+            
+            // Logic for multi-word connectors (basic check of neighbours)
+            let connectorKey = word;
+            let fullPhrase = word;
+            let found = false;
+
+            // Check simple dictionary
+            if (connectorsDB[word]) {
+                found = true;
+            } 
+            // Handle "as long as" specifically by looking at surrounding text
+            else if (word === 'long') {
+                const phraseContext = text.substring(Math.max(0, start - 3), Math.min(text.length, end + 3)).toLowerCase();
+                if (phraseContext.includes('as long as')) {
+                    connectorKey = 'as';
+                    fullPhrase = 'as long as';
+                    found = true;
+                }
+            }
+            
+            if (found && connectorsDB[connectorKey]) {
+                showTooltip(e.pageX, e.pageY, connectorsDB[connectorKey], fullPhrase);
+                e.stopPropagation(); // Prevent global click from closing it immediately
             }
         }, 10);
     }
