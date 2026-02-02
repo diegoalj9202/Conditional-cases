@@ -310,6 +310,7 @@
             line-height: 1.9;
             color: #334155;
             min-height: 150px;
+            cursor: text;
         }
 
         /* Highlights - Soft rounded edges */
@@ -639,6 +640,10 @@
         
         // Setup text interactions
         document.addEventListener('click', handleGlobalClick);
+        // Add double-click listener for global dictionary lookup
+        document.addEventListener('dblclick', handleGlobalDoubleClick);
+        
+        // Keep single click for connector hints within the text area
         caseText.addEventListener('click', handleTextClick);
         
         // Setup input saving
@@ -853,11 +858,13 @@
             // Logic for multi-word connectors (basic check of neighbours)
             let connectorKey = word;
             let fullPhrase = word;
-            let found = false;
+            let definition = "View Definition";
+            let url = word;
 
             // Check simple dictionary
             if (connectorsDB[word]) {
-                found = true;
+                definition = connectorsDB[word].def;
+                url = connectorsDB[word].url;
             } 
             // Handle "as long as" specifically by looking at surrounding text
             else if (word === 'long') {
@@ -865,12 +872,14 @@
                 if (phraseContext.includes('as long as')) {
                     connectorKey = 'as';
                     fullPhrase = 'as long as';
-                    found = true;
+                    definition = connectorsDB['as'].def;
+                    url = connectorsDB['as'].url;
                 }
             }
             
-            if (found && connectorsDB[connectorKey]) {
-                showTooltip(e.pageX, e.pageY, connectorsDB[connectorKey], fullPhrase);
+            // Always show bubble if we clicked a word
+            if (word.length > 1) {
+                showTooltip(e.pageX, e.pageY, { def: definition, url: url }, fullPhrase);
                 e.stopPropagation(); // Prevent global click from closing it immediately
             }
         }, 10);
@@ -880,10 +889,14 @@
         tooltip.style.left = x + 'px';
         tooltip.style.top = (y + 20) + 'px'; // Offset below cursor
         tooltip.style.display = 'block';
+        
+        // Capitalize title
+        const title = word.charAt(0).toUpperCase() + word.slice(1);
+        
         tooltip.innerHTML = `
-            <strong>${word}</strong><br>
-            <em>${data.def}</em>
-            <a href="https://www.wordreference.com/definition/${data.url}" target="_blank">🔊 Pronunciation & Meaning ↗</a>
+            <strong>${title}</strong><br>
+            <em style="color: #cbd5e1; font-size: 0.85rem;">${data.def}</em>
+            <a href="https://www.wordreference.com/definition/${data.url}" target="_blank">🔊 Definition & Pronunciation ↗</a>
         `;
     }
 
@@ -891,6 +904,27 @@
         // Close tooltip if clicking elsewhere
         if (!tooltip.contains(e.target) && e.target.closest('#case-text') === null) {
             tooltip.style.display = 'none';
+        }
+    }
+
+    // --- Feature: Global Double Click Lookup ---
+    function handleGlobalDoubleClick(e) {
+        const selection = window.getSelection();
+        const word = selection.toString().trim();
+
+        // Basic validation to ensure we selected a word (no numbers/symbols only)
+        if (word.length > 1 && /^[a-zA-Z\u00C0-\u00FF]+$/.test(word)) {
+            let definition = "Search on WordReference";
+            let url = word;
+            
+            // Check if we have a specific custom definition in our local DB
+            const lower = word.toLowerCase();
+            if (connectorsDB[lower]) {
+                definition = connectorsDB[lower].def;
+                url = connectorsDB[lower].url;
+            }
+
+            showTooltip(e.pageX, e.pageY, { def: definition, url: url }, word);
         }
     }
 
