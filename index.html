@@ -305,13 +305,69 @@
             border-radius: 12px; /* Smooth corners in screenshot */
         }
         
-        #case-text {
+        #case-content-container {
             font-size: 1.25rem;
             line-height: 1.9;
             color: #334155;
             min-height: 150px;
             cursor: text;
         }
+
+        /* Evidence Panel Styles */
+        details.evidence-panel {
+            margin-top: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        details.evidence-panel summary {
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--primary-dark);
+            background: #eef2ff;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        details.evidence-panel summary::-webkit-details-marker { display: none; }
+        
+        details.evidence-panel summary:hover {
+            background: #e0e7ff;
+        }
+
+        details.evidence-panel[open] summary {
+            border-bottom: 1px solid var(--border);
+        }
+
+        details.evidence-panel summary::after {
+            content: '+';
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        details.evidence-panel[open] summary::after {
+            content: '-';
+        }
+
+        .evidence-list {
+            padding: 1rem 1.5rem 1.5rem 2.5rem;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .evidence-list li {
+            margin-bottom: 0.8rem;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+        .evidence-list li:last-child { margin-bottom: 0; }
 
         /* Highlights - Soft rounded edges */
         .highlight-real { background-color: var(--hl-real-bg); color: var(--hl-real-text); border-radius: 6px; padding: 2px 4px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
@@ -375,7 +431,6 @@
         #tooltip strong { font-size: 1.1em; color: #60a5fa; }
         #tooltip em { display: block; margin: 0.4rem 0; font-style: normal; color: #cbd5e1; }
         #tooltip .phonetic { color: #94a3b8; font-size: 0.85em; margin-left: 0.5rem; }
-        /* Removed external link styles since we are not showing them anymore */
 
         /* Animation Keyframes */
         @keyframes shake {
@@ -470,6 +525,8 @@
             main { padding: 0; }
             .reading-section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
             .student-info { box-shadow: none; border: 1px solid #ccc; }
+            details.evidence-panel { break-inside: avoid; }
+            details.evidence-panel[open] { display: block; }
         }
     </style>
 </head>
@@ -529,9 +586,10 @@
                         | Case: <span id="capture-case-title" style="font-weight:600;"></span>
                     </div>
                 </div>
-                <article id="case-text">
+                <!-- Content Container for Paragraph and Evidence -->
+                <div id="case-content-container">
                     <!-- Text injected by JS -->
-                </article>
+                </div>
             </div>
         </section>
 
@@ -553,49 +611,105 @@
 
 <script>
     // --- Configuration ---
-    const STORAGE_KEY = 'efl_lab_state_v1';
+    const STORAGE_KEY = 'efl_lab_state_v2'; // Bumped version for new content structure
 
     // --- Data: Content ---
     const cases = [
         {
             id: 1,
             title: "Case 1 — The Silent Expert",
-            content: `María is excellent at problem-solving and her written work is always outstanding, but she never speaks in class and avoids group discussions. Although she clearly understands the content, she seems tense whenever she has to interact with others. Her teacher tells her, “Unless you participate, I can’t assess your learning properly,” and later adds that students improve as long as they take risks and share ideas. María admits she would probably contribute more were the classroom a safer place, and one classmate comments that if the teacher had created more belonging earlier, María would have participated sooner.`
+            paragraph: `María is excellent at problem-solving and her written work is always outstanding, but she never speaks in class and avoids group discussions. Although she clearly understands the content, she seems tense whenever she has to interact with others. Her teacher tells her, “Unless you participate, I can’t assess your learning properly,” and later adds that students improve as long as they take risks and share ideas. María admits she would probably contribute more were the classroom a safer place, and one classmate comments that if the teacher had created more belonging earlier, María would have participated sooner.`,
+            evidence: [
+                "Context: Academic English speaking course; groups of 4; assessment = 60% participation + 40% tasks.",
+                "Student quotes: “I freeze when everyone looks at me.” / “I can explain in writing, but speaking feels risky.”",
+                "Teacher quote: “Provided that you speak at least once per activity, I can give you credit.”",
+                "Observation: María writes detailed notes and helps quietly, but avoids eye contact when discussion starts.",
+                "Data: She spoke 2 times in 4 lessons; her written scores average 4.6/5.0."
+            ]
         },
         {
             id: 2,
             title: "Case 2 — The Memorizer",
-            content: `In a history course, Andrés gets top marks because he memorizes facts quickly, but when the class has debates, he struggles to explain ideas or connect information to real issues. A classmate argues that learning stays passive as long as students study only for tests, but it becomes more meaningful provided that they connect facts to real problems. Andrés says that if he used discussion more, he would develop stronger arguments, and another student adds that had the course focused on experiences, they might have remembered the content better and used it more confidently.`
+            paragraph: `In a history course, Andrés gets top marks because he memorizes facts quickly, but when the class has debates, he struggles to explain ideas or connect information to real issues. A classmate argues that learning stays passive as long as students study only for tests, but it becomes more meaningful provided that they connect facts to real problems. Andrés says that if he used discussion more, he would develop stronger arguments, and another student adds that had the course focused on experiences, they might have remembered the content better and used it more confidently.`,
+            evidence: [
+                "Context: Lecture-heavy course; 35 students; assessment = 70% exams + 30% quizzes.",
+                "Student quotes: “I remember dates, but I don’t know what they mean.” / “Debates stress me out unless I prepare a script.”",
+                "Teacher quote: “On condition that you use evidence, your opinion can be any position.”",
+                "Observation: Andrés speaks only when asked direct questions; he reads notes word-for-word.",
+                "Data: Exam scores 4.8/5.0; debate score 2.7/5.0."
+            ]
         },
         {
             id: 3,
             title: "Case 3 — Group Work Breakdown",
-            content: `A group project collapses because two members do all the work while the others remain silent and disconnected. The final product is weak, and the group feels frustrated. The teacher explains that teams work better provided that everyone has a clear role and that fairness is impossible unless each person takes responsibility. One student says the group would solve conflicts more effectively if they were more independent, and another reflects that if they had practiced generosity—sharing time, effort, and support—the result would have been completely different.`
+            paragraph: `A group project collapses because two members do all the work while the others remain silent and disconnected. The final product is weak, and the group feels frustrated. The teacher explains that teams work better provided that everyone has a clear role and that fairness is impossible unless each person takes responsibility. One student says the group would solve conflicts more effectively if they were more independent, and another reflects that if they had practiced generosity—sharing time, effort, and support—the result would have been completely different.`,
+            evidence: [
+                "Context: Project-based course; groups of 5; assessment = one final grade for the whole group.",
+                "Student quotes: “I did everything because I didn’t trust them.” / “I stayed quiet unless someone asked me directly.”",
+                "Teacher quote: “Were you to assign roles from the start, the teamwork would improve.”",
+                "Observation: Two students lead every decision; others agree without contributing.",
+                "Data: 6 missed internal deadlines; 3 unresolved conflicts reported."
+            ]
         },
         {
             id: 4,
             title: "Case 4 — The Creative Student",
-            content: `Luisa learns best when she can design visual materials, create mind maps, and build infographics, but she feels the school only values essays and traditional tests. She says she learns deeply as long as she can create something and complains that students disengage unless teachers allow different ways to show learning. Luisa believes that if school valued visual thinking more, many students would feel capable, and she admits that if her teachers had recognized her strengths earlier, she would have believed in herself much sooner.`
+            paragraph: `Luisa learns best when she can design visual materials, create mind maps, and build infographics, but she feels the school only values essays and traditional tests. She says she learns deeply as long as she can create something and complains that students disengage unless teachers allow different ways to show learning. Luisa believes that if school valued visual thinking more, many students would feel capable, and she admits that if her teachers had recognized her strengths earlier, she would have believed in herself much sooner.`,
+            evidence: [
+                "Context: Academic writing course; assessment = 80% essays + 20% grammar tests.",
+                "Student quotes: “I understand the topic once I organize it visually.” / “I feel stupid unless I can show what I know differently.”",
+                "Teacher quote: “Provided that you follow the rubric, I can’t accept infographics instead of essays.”",
+                "Observation: Luisa produces excellent mind maps but rushes the final essay and loses points for structure.",
+                "Data: Mind map task: 5.0/5.0; essay average: 3.3/5.0."
+            ]
         },
         {
             id: 5,
             title: "Case 5 — The Strict Classroom",
-            content: `In a language class, students rarely volunteer because the teacher corrects every mistake immediately and often interrupts them mid-sentence. The room feels tense, and participation is low. One student observes that people speak more provided that mistakes are treated as normal, and another insists that students won’t take risks unless they feel significant. A class leader suggests the class would feel more human were feedback more respectful, and several students agree that had the teacher focused on the heart, they would have improved faster and with more confidence.`
+            paragraph: `In a language class, students rarely volunteer because the teacher corrects every mistake immediately and often interrupts them mid-sentence. The room feels tense, and participation is low. One student observes that people speak more provided that mistakes are treated as normal, and another insists that students won’t take risks unless they feel significant. A class leader suggests the class would feel more human were feedback more respectful, and several students agree that had the teacher focused on the heart, they would have improved faster and with more confidence.`,
+            evidence: [
+                "Context: Speaking & pronunciation course; 12 students; assessment = 50% speaking tests + 50% participation.",
+                "Student quotes: “I stop talking when I’m interrupted.” / “I would speak more if mistakes weren’t a big deal.”",
+                "Teacher quote: “Unless your grammar is accurate, you will lose points.”",
+                "Observation: Only 3 students volunteer; others avoid eye contact and give one-word answers.",
+                "Data: Attendance dropped from 12 to 9 in three weeks."
+            ]
         },
         {
             id: 6,
             title: "Case 6 — The Independent Learner",
-            content: `Santiago studies alone using podcasts, flashcards, and weekly goals, and he improves quickly because he is consistent. However, he rarely supports classmates and prefers to work independently. A peer tells him he learns fast as long as he keeps his routine, but argues that learning transforms communities provided that people share what they know. Santiago admits that if he helped others, the group would improve too, and the class later reflects that if they had built a culture of generosity earlier, weaker students would have felt supported and less anxious.`
+            paragraph: `Santiago studies alone using podcasts, flashcards, and weekly goals, and he improves quickly because he is consistent. However, he rarely supports classmates and prefers to work independently. A peer tells him he learns fast as long as he keeps his routine, but argues that learning transforms communities provided that people share what they know. Santiago admits that if he helped others, the group would improve too, and the class later reflects that if they had built a culture of generosity earlier, weaker students would have felt supported and less anxious.`,
+            evidence: [
+                "Context: Mixed-skill English class; pair work daily; assessment = individual tests + participation.",
+                "Student quotes: “I don’t want to slow down.” / “I learn best unless I have to depend on someone else.”",
+                "Teacher quote: “On condition that you support your partner, your teamwork grade will increase.”",
+                "Observation: Santiago finishes early and checks his phone while others struggle.",
+                "Data: Santiago’s quiz average: 4.7/5.0; peer feedback rating: 2.8/5.0."
+            ]
         },
         {
             id: 7,
             title: "Case 7 — The Practical Worker",
-            content: `Carolina works full-time and attends class in the evenings, and she learns best through practical tasks rather than long lectures. She says she can’t learn well unless she applies ideas to real situations and that learning becomes meaningful as long as students use experience, not only theory. Carolina adds that she would participate more were the course more hands-on, and she strongly believes that had the class done more practice tasks from the start, she would have felt more capable and less stressed.`
+            paragraph: `Carolina works full-time and attends class in the evenings, and she learns best through practical tasks rather than long lectures. She says she can’t learn well unless she applies ideas to real situations and that learning becomes meaningful as long as students use experience, not only theory. Carolina adds that she would participate more were the course more hands-on, and she strongly believes that had the class done more practice tasks from the start, she would have felt more capable and less stressed.`,
+            evidence: [
+                "Context: Evening B2 course; 10 students; assessment = 60% exams + 40% homework.",
+                "Student quotes: “I understand once I try it.” / “I lose focus unless the task feels real.”",
+                "Teacher quote: “Provided that we finish the book units, we can do a project later.”",
+                "Observation: Carolina asks for examples and role-plays; she disengages during long explanations.",
+                "Data: She submitted 4 of 8 homework tasks late; her speaking is strong (4.4/5.0) but tests are lower (3.1/5.0)."
+            ]
         },
         {
             id: 8,
             title: "Case 8 — The Transformation Moment",
-            content: `In a workshop, a professor treats students with respect, gives them real responsibility, and asks them to reflect on beliefs they have held for years. One student says people change provided that they feel safe and respected, and another claims that learning stays superficial unless students question old beliefs. A quiet participant admits that if she didn’t feel belonging in that space, she would stay silent, and she finishes by saying that had she experienced this type of learning earlier, she would have chosen a different academic and professional path.`
+            paragraph: `In a workshop, a professor treats students with respect, gives them real responsibility, and asks them to reflect on beliefs they have held for years. One student says people change provided that they feel safe and respected, and another claims that learning stays superficial unless students question old beliefs. A quiet participant admits that if she didn’t feel belonging in that space, she would stay silent, and she finishes by saying that had she experienced this type of learning earlier, she would have chosen a different academic and professional path.`,
+            evidence: [
+                "Context: Short workshop (2 hours); small group of 15; assessment = reflection letter + peer feedback.",
+                "Student quotes: “I felt capable because my opinion mattered.” / “I changed my mind when I heard other stories.”",
+                "Teacher quote: “Were you to stay curious instead of defensive, this conversation would transform you.”",
+                "Observation: Students build on each other’s comments; they ask follow-up questions without fear.",
+                "Data: 14/15 students participated; reflection letters averaged 4.5/5.0."
+            ]
         }
     ];
 
@@ -623,7 +737,7 @@
     // --- DOM Elements ---
     const sidebarList = document.getElementById('nav-list');
     const caseTitle = document.getElementById('case-title');
-    const caseText = document.getElementById('case-text');
+    const caseContentContainer = document.getElementById('case-content-container');
     const tooltip = document.getElementById('tooltip');
     const studentNameInput = document.getElementById('student-name');
     const autosaveStatus = document.getElementById('autosave-status');
@@ -634,10 +748,8 @@
         const loaded = loadFromLocalStorage();
         
         if (!loaded) {
-            // Default initialization if no save found
-            cases.forEach(c => {
-                appState.userData[c.id] = { html: c.content };
-            });
+            // No saved data or data format mismatch logic could go here
+            // But currently loadCase generates fresh HTML if userData[id] is missing
         }
 
         renderSidebar();
@@ -719,7 +831,6 @@
         cases.forEach((c, index) => {
             const li = document.createElement('li');
             li.className = 'nav-item';
-            // Simplify text for mobile view (or desktop if needed, though usually fine)
             li.textContent = c.title;
             li.onclick = () => switchCase(index);
             if(index === appState.currentCaseIndex) li.classList.add('active');
@@ -743,20 +854,34 @@
 
     function loadCase(index) {
         const c = cases[index];
-        
-        // Ensure data exists (in case of partial load)
-        if (!appState.userData[c.id]) {
-            appState.userData[c.id] = { html: c.content };
-        }
-        
-        const data = appState.userData[c.id];
         caseTitle.textContent = c.title;
-        caseText.innerHTML = data.html; 
+        
+        // Check if we have saved HTML for this case
+        if (appState.userData[c.id] && appState.userData[c.id].html) {
+            // Restore saved state (highlighted HTML)
+            caseContentContainer.innerHTML = appState.userData[c.id].html;
+        } else {
+            // Generate fresh HTML from structure
+            let evidenceListHtml = '<ul class="evidence-list">';
+            c.evidence.forEach(point => {
+                evidenceListHtml += `<li>${point}</li>`;
+            });
+            evidenceListHtml += '</ul>';
+
+            const freshHtml = `
+                <div class="case-paragraph">${c.paragraph}</div>
+                <details class="evidence-panel">
+                    <summary>Case file (evidence)</summary>
+                    ${evidenceListHtml}
+                </details>
+            `;
+            caseContentContainer.innerHTML = freshHtml;
+        }
     }
 
     function saveCurrentState() {
         const c = cases[appState.currentCaseIndex];
-        const currentHTML = caseText.innerHTML;
+        const currentHTML = caseContentContainer.innerHTML;
         appState.userData[c.id] = {
             html: currentHTML
         };
@@ -769,9 +894,9 @@
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
         
-        // Check if selection is within case-text
-        if (!caseText.contains(selection.anchorNode)) {
-            alert("Please select text inside the reading area.");
+        // Check if selection is within our content container
+        if (!caseContentContainer.contains(selection.anchorNode)) {
+            alert("Please select text inside the reading area (paragraph or evidence).");
             return;
         }
 
@@ -793,8 +918,11 @@
     function clearHighlights() {
         if(confirm("Remove all highlights for this case?")) {
             const c = cases[appState.currentCaseIndex];
-            caseText.innerHTML = c.content; // Reload original text
-            saveCurrentState();
+            // Clear saved data for this case to force regeneration in loadCase
+            delete appState.userData[c.id];
+            loadCase(appState.currentCaseIndex);
+            
+            saveCurrentState(); // This re-saves the fresh (clean) state
             saveToLocalStorage();
         }
     }
@@ -815,8 +943,6 @@
         
         contentHtml += `<br><em style="color: #cbd5e1; font-size: 0.85rem;">${data.def}</em>`;
         
-        // Removed external link per user request - showing only inline definition
-
         tooltip.innerHTML = contentHtml;
     }
 
