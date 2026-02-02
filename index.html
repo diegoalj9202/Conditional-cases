@@ -155,6 +155,7 @@
             gap: 0.5rem;
             box-shadow: 0 10px 25px -5px var(--shadow-color);
             border: 1px solid rgba(255,255,255,0.8);
+            position: relative;
         }
         .student-info label {
             font-weight: 700;
@@ -162,7 +163,18 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
         }
+        .autosave-status {
+            font-size: 0.75rem;
+            color: #16a34a;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .autosave-status.visible { opacity: 1; }
+        
         .student-info input {
             padding: 0.8rem 1.2rem;
             border: 2px solid var(--border);
@@ -279,6 +291,13 @@
         .btn-primary:active { box-shadow: 0 2px 0 var(--primary-dark); }
         .btn-primary:hover { filter: brightness(1.1); }
 
+        .btn-reset { 
+            background: #fff1f2; 
+            color: #be123c; 
+            border: 1px solid #ffe4e6;
+            font-size: 0.85rem;
+        }
+
         /* Capture Wrapper */
         #capture-wrapper {
             background: white;
@@ -316,6 +335,7 @@
             gap: 1.5rem;
             justify-content: center;
             padding-bottom: 2rem;
+            flex-wrap: wrap;
         }
         .actions-bar .btn {
             padding: 1rem 2rem;
@@ -331,7 +351,7 @@
             border-radius: 12px;
             font-size: 0.95rem;
             max-width: 280px;
-            z-index: 100;
+            z-index: 1000;
             display: none;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             pointer-events: auto;
@@ -465,14 +485,17 @@
             <h1 id="case-title">Case Title</h1>
             
             <div class="student-info">
-                <label for="student-name">Your Name (Required):</label>
+                <label for="student-name">
+                    Your Name (Required):
+                    <span id="autosave-status" class="autosave-status">✅ Autosaved</span>
+                </label>
                 <input type="text" id="student-name" placeholder="Enter your full name here..." oninput="this.classList.remove('error')">
             </div>
 
             <div class="instructions-card">
                 <h3>Activity Steps</h3>
                 <ul class="step-list">
-                    <li><strong>Step A: Extract</strong><br>Read and highlight conditional sentences using the color tools.</li>
+                    <li><strong>Step A: Extract</strong><br>Read and highlight conditional sentences using the color tools. Copy them into your notebook.</li>
                     <li><strong>Step B: Analyze</strong><br>In your notebook, classify each one by type (Real, Hyp-Now, Hyp-Past) and identify the principle.</li>
                     <li><strong>Step C: Evidence</strong><br>Click 'Download Evidence' below to save an image of your highlighted text.</li>
                 </ul>
@@ -517,11 +540,15 @@
         <div class="actions-bar">
             <button class="btn" onclick="window.print()">🖨️ Print View</button>
             <button class="btn" onclick="exportData()">💾 Save All JSON</button>
+            <button class="btn btn-reset" onclick="resetAllData()">⚠️ Reset All Progress</button>
         </div>
     </main>
 </div>
 
 <script>
+    // --- Configuration ---
+    const STORAGE_KEY = 'efl_lab_state_v1';
+
     // --- Data: Content ---
     const cases = [
         {
@@ -587,27 +614,96 @@
         userData: {} // Format: { caseId: { html: '' } }
     };
 
-    // Initialize userData for all cases
-    cases.forEach(c => {
-        appState.userData[c.id] = { html: c.content };
-    });
-
     // --- DOM Elements ---
     const sidebarList = document.getElementById('nav-list');
     const caseTitle = document.getElementById('case-title');
     const caseText = document.getElementById('case-text');
     const tooltip = document.getElementById('tooltip');
     const studentNameInput = document.getElementById('student-name');
+    const autosaveStatus = document.getElementById('autosave-status');
 
     // --- Initialization ---
     function init() {
-        renderSidebar();
-        loadCase(0);
+        // Attempt to load from storage
+        const loaded = loadFromLocalStorage();
         
-        // Setup text interactions - SWITCHED TO CLICK
+        if (!loaded) {
+            // Default initialization if no save found
+            cases.forEach(c => {
+                appState.userData[c.id] = { html: c.content };
+            });
+        }
+
+        renderSidebar();
+        loadCase(appState.currentCaseIndex);
+        
+        // Setup text interactions
         document.addEventListener('click', handleGlobalClick);
-        // Tooltip logic - SWITCHED TO CLICK
         caseText.addEventListener('click', handleTextClick);
+        
+        // Setup input saving
+        studentNameInput.addEventListener('input', () => {
+            saveToLocalStorage();
+        });
+    }
+
+    // --- Local Storage Logic ---
+    function saveToLocalStorage() {
+        const studentName = studentNameInput.value;
+        const dataToSave = {
+            currentCaseIndex: appState.currentCaseIndex,
+            userData: appState.userData,
+            studentName: studentName,
+            timestamp: new Date().getTime()
+        };
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+            showAutosaveStatus();
+        } catch (e) {
+            console.error("Autosave failed:", e);
+        }
+    }
+
+    function loadFromLocalStorage() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                
+                // Restore Data
+                appState.currentCaseIndex = typeof parsed.currentCaseIndex === 'number' ? parsed.currentCaseIndex : 0;
+                
+                // Merge userData (in case content length changed, though unlikely in this activity)
+                if (parsed.userData) {
+                    appState.userData = parsed.userData;
+                }
+                
+                // Restore Name
+                if (parsed.studentName) {
+                    studentNameInput.value = parsed.studentName;
+                }
+
+                return true;
+            } catch (e) {
+                console.error("Error loading save:", e);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    function resetAllData() {
+        if(confirm("Are you sure you want to delete all saved progress? This cannot be undone.")) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload(); // Refresh to reset state
+        }
+    }
+
+    function showAutosaveStatus() {
+        autosaveStatus.classList.add('visible');
+        setTimeout(() => {
+            autosaveStatus.classList.remove('visible');
+        }, 2000);
     }
 
     // --- Core Navigation ---
@@ -631,29 +727,34 @@
     }
 
     function switchCase(index) {
-        saveCurrentState();
+        saveCurrentState(); // Save old case state to memory
         appState.currentCaseIndex = index;
-        renderSidebar(); // Update active class
+        saveToLocalStorage(); // Persist change
+        renderSidebar(); 
         loadCase(index);
     }
 
     function loadCase(index) {
         const c = cases[index];
+        
+        // Ensure data exists (in case of partial load)
+        if (!appState.userData[c.id]) {
+            appState.userData[c.id] = { html: c.content };
+        }
+        
         const data = appState.userData[c.id];
-
         caseTitle.textContent = c.title;
-        caseText.innerHTML = data.html; // Load text with existing highlights
+        caseText.innerHTML = data.html; 
     }
 
     function saveCurrentState() {
         const c = cases[appState.currentCaseIndex];
-        
-        // Save HTML (highlights)
         const currentHTML = caseText.innerHTML;
-
         appState.userData[c.id] = {
             html: currentHTML
         };
+        // Note: We don't call saveToLocalStorage here automatically to avoid excessive writes
+        // It is called in specific triggers (applyHighlight, switchCase)
     }
 
     // --- Feature: Highlighting ---
@@ -678,16 +779,16 @@
             alert("Please select a clean block of text (avoid overlapping existing highlights).");
         }
         
-        // Auto-save relies on switchCase or manual logic, but for safety:
-        saveCurrentState(); 
+        saveCurrentState();
+        saveToLocalStorage(); // Auto-save after highlight
     }
 
     function clearHighlights() {
         if(confirm("Remove all highlights for this case?")) {
-            // Simple way: reload original text
             const c = cases[appState.currentCaseIndex];
-            caseText.innerHTML = c.content;
+            caseText.innerHTML = c.content; // Reload original text
             saveCurrentState();
+            saveToLocalStorage();
         }
     }
 
@@ -715,6 +816,23 @@
                 if (pos) {
                     textNode = pos.offsetNode;
                     offset = pos.offset;
+                }
+            }
+
+            // --- FIX: Handle Element Nodes (e.g. clicking directly on a highlight span) ---
+            if (textNode && textNode.nodeType === Node.ELEMENT_NODE) {
+                // If we clicked a span, try to get the text node inside it
+                if (textNode.childNodes[offset] && textNode.childNodes[offset].nodeType === Node.TEXT_NODE) {
+                    textNode = textNode.childNodes[offset];
+                    offset = 0; 
+                } else if (textNode.childNodes.length > 0) {
+                     // Fallback: just grab the first text node we find
+                    for(let i=0; i<textNode.childNodes.length; i++) {
+                        if (textNode.childNodes[i].nodeType === Node.TEXT_NODE) {
+                            textNode = textNode.childNodes[i];
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -832,6 +950,7 @@
         const studentName = studentNameInput.value.trim();
         
         saveCurrentState(); // Ensure latest state is captured
+        saveToLocalStorage(); // Ensure local is up to date too
         
         const exportPayload = {
             studentName: studentName || "Anonymous",
@@ -856,4 +975,3 @@
 
 </body>
 </html>
-
