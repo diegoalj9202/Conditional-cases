@@ -70,8 +70,20 @@
             color: var(--primary);
             text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        
+        .version-badge {
+            font-size: 0.65rem;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: fit-content;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .nav-list {
@@ -385,6 +397,59 @@
             box-shadow: 0 10px 25px -5px var(--shadow-color);
         }
 
+        /* Language Bank Styles */
+        .bank-section {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,1);
+        }
+        .language-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+        }
+        .language-table th, .language-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .language-table th {
+            background-color: #f8fafc;
+            color: var(--primary-dark);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            width: 30%;
+            border-top: 1px solid var(--border);
+        }
+        .language-table th:first-child { border-top-left-radius: 12px; border-left: 1px solid var(--border); }
+        .language-table th:last-child { border-top-right-radius: 12px; border-right: 1px solid var(--border); }
+        
+        .language-table td {
+            background: white;
+        }
+        .language-table td:first-child { border-left: 1px solid var(--border); font-weight: 600; color: var(--primary); }
+        .language-table td:last-child { border-right: 1px solid var(--border); }
+        
+        .language-table tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+        .language-table tr:last-child td:last-child { border-bottom-right-radius: 12px; }
+
+        .language-table td ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            list-style-type: disc;
+        }
+        .language-table td li {
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
         /* Footer / Actions */
         .actions-bar {
             margin-top: 3rem;
@@ -464,6 +529,9 @@
             .brand {
                 font-size: 1.2rem;
                 padding-bottom: 0.5rem;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
             }
 
             .nav-list {
@@ -516,6 +584,13 @@
             }
             
             h1 { font-size: 1.5rem; }
+            
+            /* Table adjustments for mobile */
+            .language-table th, .language-table td {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+            .language-table th { width: 40%; }
         }
 
         /* Print Styles */
@@ -527,6 +602,7 @@
             .student-info { box-shadow: none; border: 1px solid #ccc; }
             details.evidence-panel { break-inside: avoid; }
             details.evidence-panel[open] { display: block; }
+            .bank-section { box-shadow: none; border: 1px solid #ccc; }
         }
     </style>
 </head>
@@ -535,7 +611,10 @@
 <div class="app-container">
     <!-- Navigation Sidebar -->
     <aside id="sidebar">
-        <div class="brand">🧬 EFL Lab</div>
+        <div class="brand">
+            <span>🧬 EFL Lab</span>
+            <span class="version-badge">v3.1</span>
+        </div>
         <ul class="nav-list" id="nav-list">
             <!-- Items injected by JS -->
         </ul>
@@ -543,61 +622,218 @@
 
     <!-- Main Content -->
     <main>
-        <header>
-            <h1 id="case-title">Case Title</h1>
-            
-            <div class="student-info">
-                <label for="student-name">
-                    Your Name (Required):
-                    <span id="autosave-status" class="autosave-status">✅ Autosaved</span>
-                </label>
-                <input type="text" id="student-name" placeholder="Enter your full name here..." oninput="this.classList.remove('error')">
-            </div>
+        <!-- View: Case Study (Default) -->
+        <div id="view-case">
+            <header>
+                <h1 id="case-title">Case Title</h1>
+                
+                <div class="student-info">
+                    <label for="student-name">
+                        Your Name (Required):
+                        <span id="autosave-status" class="autosave-status">✅ Autosaved</span>
+                    </label>
+                    <input type="text" id="student-name" placeholder="Enter your full name here..." oninput="this.classList.remove('error')">
+                </div>
 
-            <div class="instructions-card">
-                <h3>Activity Steps</h3>
-                <ul class="step-list">
-                    <li><strong>Step A: Extract</strong><br>Read and highlight conditional sentences using the color tools. Copy them into your notebook.</li>
-                    <li><strong>Step B: Analyze</strong><br>In your notebook, classify each one by type (Real, Hyp-Now, Hyp-Past) and identify the principle.</li>
-                    <li><strong>Step C: Evidence</strong><br>Click 'Download Evidence' below to save an image of your highlighted text.</li>
-                    <li><strong>Dictionary:</strong><br>Double-click ANY word to see its definition instantly.</li>
-                </ul>
-            </div>
-        </header>
+                <div class="instructions-card">
+                    <h3>Activity Steps</h3>
+                    <ul class="step-list">
+                        <li><strong>Step A: Extract</strong><br>Read and highlight conditional sentences using the color tools. Copy them into your notebook.</li>
+                        <li><strong>Step B: Analyze</strong><br>In your notebook, classify each one by type (Real, Hyp-Now, Hyp-Past) and identify the principle.</li>
+                        <li><strong>Step C: Evidence</strong><br>Click 'Download Evidence' below to save an image of your highlighted text.</li>
+                        <li><strong>Dictionary:</strong><br>Double-click ANY word to see its definition instantly.</li>
+                    </ul>
+                </div>
+            </header>
 
-        <!-- Tooltip Bubble -->
-        <div id="tooltip"></div>
-
-        <!-- Section 1: Reading & Highlighting -->
-        <section class="reading-section">
-            <div class="toolbar">
-                <span>Highlight Tool:</span>
-                <button class="btn btn-real" onclick="applyHighlight('real')">Real (0/1)</button>
-                <button class="btn btn-hyp-now" onclick="applyHighlight('now')">Hyp-Now (2)</button>
-                <button class="btn btn-hyp-past" onclick="applyHighlight('past')">Hyp-Past (3)</button>
-                <button class="btn btn-clear" onclick="clearHighlights()">Reset</button>
-            </div>
-            <!-- Wrapped for Screenshot -->
-            <div id="capture-wrapper">
-                <div id="capture-header" style="display:none; border-bottom: 2px solid #e5e7eb; margin-bottom: 1rem; padding-bottom: 0.5rem;">
-                    <div style="font-size: 1.2rem; font-weight: bold; color: #3730a3;">Conditionals Analysis Evidence</div>
-                    <div style="color: #4b5563; margin-top:0.25rem;">
-                        Student: <span id="capture-student-name" style="font-weight:600; color: #111;"></span> 
-                        | Case: <span id="capture-case-title" style="font-weight:600;"></span>
+            <!-- Section 1: Reading & Highlighting -->
+            <section class="reading-section">
+                <div class="toolbar">
+                    <span>Highlight Tool:</span>
+                    <button class="btn btn-real" onclick="applyHighlight('real')">Real (0/1)</button>
+                    <button class="btn btn-hyp-now" onclick="applyHighlight('now')">Hyp-Now (2)</button>
+                    <button class="btn btn-hyp-past" onclick="applyHighlight('past')">Hyp-Past (3)</button>
+                    <button class="btn btn-clear" onclick="clearHighlights()">Reset</button>
+                </div>
+                <!-- Wrapped for Screenshot -->
+                <div id="capture-wrapper">
+                    <div id="capture-header" style="display:none; border-bottom: 2px solid #e5e7eb; margin-bottom: 1rem; padding-bottom: 0.5rem;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #3730a3;">Conditionals Analysis Evidence</div>
+                        <div style="color: #4b5563; margin-top:0.25rem;">
+                            Student: <span id="capture-student-name" style="font-weight:600; color: #111;"></span> 
+                            | Case: <span id="capture-case-title" style="font-weight:600;"></span>
+                        </div>
+                    </div>
+                    <!-- Content Container for Paragraph and Evidence -->
+                    <div id="case-content-container">
+                        <!-- Text injected by JS -->
                     </div>
                 </div>
-                <!-- Content Container for Paragraph and Evidence -->
-                <div id="case-content-container">
-                    <!-- Text injected by JS -->
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Replaced Section: Download Evidence -->
-        <div class="evidence-section">
-            <button id="btn-evidence" class="btn btn-primary" onclick="downloadEvidence()">
-                📸 Download Evidence (PNG)
-            </button>
+            <!-- Replaced Section: Download Evidence -->
+            <div class="evidence-section">
+                <button id="btn-evidence" class="btn btn-primary" onclick="downloadEvidence()">
+                    📸 Download Evidence (PNG)
+                </button>
+            </div>
+        </div>
+
+        <!-- View: Language Bank (Hidden) -->
+        <div id="view-bank" style="display: none;">
+            <header>
+                <h1>Reaction & Commenting Language Bank</h1>
+                <div class="instructions-card">
+                    <h3>Reference Material (Unit 1)</h3>
+                    <p>Use these phrases to construct your responses in the analysis section or during class discussions.</p>
+                </div>
+            </header>
+            <div class="bank-section">
+                <table class="language-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Useful Phrases</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1) Showing Agreement</td>
+                            <td>
+                                <ul>
+                                    <li>I agree with your point that…</li>
+                                    <li>That’s a strong point.</li>
+                                    <li>I think you’re right because…</li>
+                                    <li>I completely agree, especially about…</li>
+                                    <li>That makes sense to me.</li>
+                                    <li>I see it the same way.</li>
+                                    <li>I like that idea because…</li>
+                                    <li>I agree to some extent.</li>
+                                    <li>That’s a convincing argument.</li>
+                                    <li>Your example really supports your point.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2) Partly Agreeing<br><span style="font-weight:normal; font-size:0.85em; color:var(--text-muted)">(Balanced response)</span></td>
+                            <td>
+                                <ul>
+                                    <li>I agree up to a point, but…</li>
+                                    <li>I see what you mean; however…</li>
+                                    <li>That’s true in some cases, but…</li>
+                                    <li>I partly agree, although…</li>
+                                    <li>I understand your point, but I’d add that…</li>
+                                    <li>I agree with the main idea, but the downside is…</li>
+                                    <li>That’s a fair point, but it depends on…</li>
+                                    <li>I’m with you on…, but I’m not sure about…</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3) Disagreeing Politely</td>
+                            <td>
+                                <ul>
+                                    <li>I’m not sure I agree with that.</li>
+                                    <li>I see your point, but I disagree because…</li>
+                                    <li>I’m afraid I disagree.</li>
+                                    <li>I don’t think that’s always true.</li>
+                                    <li>I would challenge that assumption.</li>
+                                    <li>I’m not convinced that…</li>
+                                    <li>I think the problem with that idea is…</li>
+                                    <li>From my perspective, that may not work because…</li>
+                                    <li>I respectfully disagree.</li>
+                                    <li>I get what you’re saying, but I see it differently.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4) Asking for clarification / Challenging gently</td>
+                            <td>
+                                <ul>
+                                    <li>Could you clarify what you mean by…?</li>
+                                    <li>What do you mean exactly when you say…?</li>
+                                    <li>Could you give an example of…?</li>
+                                    <li>Why do you think that happens?</li>
+                                    <li>How does that connect to… (belonging/mastery/etc.)?</li>
+                                    <li>What evidence supports that idea?</li>
+                                    <li>Can you explain that in another way?</li>
+                                    <li>I’m not sure I understand—do you mean…?</li>
+                                    <li>What makes you say that?</li>
+                                    <li>How would that work in practice?</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5) Adding ideas / Building on a point</td>
+                            <td>
+                                <ul>
+                                    <li>I’d like to add that…</li>
+                                    <li>Another way to look at it is…</li>
+                                    <li>Building on your idea,…</li>
+                                    <li>That reminds me of…</li>
+                                    <li>We could also consider…</li>
+                                    <li>It might also help to…</li>
+                                    <li>A related point is…</li>
+                                    <li>One more factor could be…</li>
+                                    <li>What I find interesting is…</li>
+                                    <li>This connects to… (MI / principles) because…</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6) Suggesting improvements<br><span style="font-weight:normal; font-size:0.85em; color:var(--text-muted)">(Constructive feedback)</span></td>
+                            <td>
+                                <ul>
+                                    <li>One suggestion would be to…</li>
+                                    <li>It might be worth + -ing…</li>
+                                    <li>You could strengthen your argument by…</li>
+                                    <li>You might want to include…</li>
+                                    <li>I’d recommend + -ing…</li>
+                                    <li>A clearer example could be…</li>
+                                    <li>It would be more convincing if you…</li>
+                                    <li>You could make this more specific by…</li>
+                                    <li>Have you considered + -ing…?</li>
+                                    <li>A practical next step would be to…</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>7) Evaluating feasibility<br><span style="font-weight:normal; font-size:0.85em; color:var(--text-muted)">(Realistic vs Ideal)</span></td>
+                            <td>
+                                <ul>
+                                    <li>That sounds realistic because…</li>
+                                    <li>That might be difficult in practice because…</li>
+                                    <li>That could work, provided that…</li>
+                                    <li>That would only work if/unless…</li>
+                                    <li>The risk is that…</li>
+                                    <li>The main challenge would be…</li>
+                                    <li>That depends on…</li>
+                                    <li>It’s a good idea, but it requires…</li>
+                                    <li>This might be easier to implement if…</li>
+                                    <li>This could be a long-term solution rather than an immediate one.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>8) Using conditional-style reactions</td>
+                            <td>
+                                <ul>
+                                    <li>That could work, provided that…</li>
+                                    <li>I’d agree with that as long as…</li>
+                                    <li>I’m not fully convinced—unless…</li>
+                                    <li>Unless we consider…, the idea may not…</li>
+                                    <li>Were the class to…, it would…</li>
+                                    <li>Had the teacher…, the result might have…</li>
+                                    <li>Without…, students wouldn’t…</li>
+                                    <li>It would be more effective if…</li>
+                                    <li>If we wanted real change, we’d have to…</li>
+                                    <li>That would have been different if…</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Footer Actions -->
@@ -608,9 +844,12 @@
     </main>
 </div>
 
+<!-- Tooltip Bubble (Global) -->
+<div id="tooltip"></div>
+
 <script>
     // --- Configuration ---
-    const STORAGE_KEY = 'efl_lab_state_v2'; // Bumped version for new content structure
+    const STORAGE_KEY = 'efl_lab_state_v4'; // Bumped version for state reset with new logic
 
     // --- Data: Content ---
     const cases = [
@@ -730,6 +969,7 @@
     // --- State Management ---
     let appState = {
         currentCaseIndex: 0,
+        currentView: 'case', // 'case' or 'bank'
         userData: {} // Format: { caseId: { html: '' } }
     };
 
@@ -740,6 +980,8 @@
     const tooltip = document.getElementById('tooltip');
     const studentNameInput = document.getElementById('student-name');
     const autosaveStatus = document.getElementById('autosave-status');
+    const viewCase = document.getElementById('view-case');
+    const viewBank = document.getElementById('view-bank');
 
     // --- Initialization ---
     function init() {
@@ -747,12 +989,17 @@
         const loaded = loadFromLocalStorage();
         
         if (!loaded) {
-            // No saved data or data format mismatch logic could go here
-            // But currently loadCase generates fresh HTML if userData[id] is missing
+            // Default initialization if no save found
         }
 
+        // Restore view state if loaded, else default
+        if(appState.currentView === 'bank') {
+            showBankView();
+        } else {
+            showCaseView(appState.currentCaseIndex);
+        }
+        
         renderSidebar();
-        loadCase(appState.currentCaseIndex);
         
         // Setup text interactions
         document.addEventListener('click', handleGlobalClick);
@@ -770,6 +1017,7 @@
         const studentName = studentNameInput.value;
         const dataToSave = {
             currentCaseIndex: appState.currentCaseIndex,
+            currentView: appState.currentView,
             userData: appState.userData,
             studentName: studentName,
             timestamp: new Date().getTime()
@@ -790,6 +1038,7 @@
                 
                 // Restore Data
                 appState.currentCaseIndex = typeof parsed.currentCaseIndex === 'number' ? parsed.currentCaseIndex : 0;
+                appState.currentView = parsed.currentView || 'case';
                 
                 // Merge userData (in case content length changed, though unlikely in this activity)
                 if (parsed.userData) {
@@ -830,11 +1079,29 @@
         cases.forEach((c, index) => {
             const li = document.createElement('li');
             li.className = 'nav-item';
+            // Simplify text for mobile view (or desktop if needed, though usually fine)
             li.textContent = c.title;
-            li.onclick = () => switchCase(index);
-            if(index === appState.currentCaseIndex) li.classList.add('active');
+            li.onclick = () => showCaseView(index);
+            if(appState.currentView === 'case' && index === appState.currentCaseIndex) li.classList.add('active');
             sidebarList.appendChild(li);
         });
+
+        // Separator
+        if(window.innerWidth > 768) {
+            const separator = document.createElement('hr');
+            separator.style.margin = "1rem 0";
+            separator.style.border = "0";
+            separator.style.borderTop = "1px solid var(--border)";
+            sidebarList.appendChild(separator);
+        }
+
+        // Language Bank Item
+        const bankLi = document.createElement('li');
+        bankLi.className = 'nav-item';
+        bankLi.textContent = "📚 Language Bank";
+        bankLi.onclick = () => showBankView();
+        if (appState.currentView === 'bank') bankLi.classList.add('active');
+        sidebarList.appendChild(bankLi);
         
         // Auto-scroll active item into view on mobile
         if(window.innerWidth <= 768) {
@@ -843,12 +1110,35 @@
         }
     }
 
-    function switchCase(index) {
-        saveCurrentState(); // Save old case state to memory
+    function showCaseView(index) {
+        if (appState.currentView === 'case' && appState.currentCaseIndex !== index) {
+            saveCurrentState(); // Save previous case
+        }
+        
+        appState.currentView = 'case';
         appState.currentCaseIndex = index;
-        saveToLocalStorage(); // Persist change
+        
+        viewCase.style.display = 'block';
+        viewBank.style.display = 'none';
+        
+        saveToLocalStorage(); // Persist view change
         renderSidebar(); 
         loadCase(index);
+    }
+
+    function showBankView() {
+        if (appState.currentView === 'case') {
+            saveCurrentState(); // Save current case before switching
+        }
+
+        appState.currentView = 'bank';
+        
+        viewCase.style.display = 'none';
+        viewBank.style.display = 'block';
+        
+        saveToLocalStorage();
+        renderSidebar();
+        document.querySelector('main').scrollTop = 0;
     }
 
     function loadCase(index) {
@@ -1062,29 +1352,6 @@
             btn.textContent = originalText;
             btn.disabled = false;
         });
-    }
-
-    // --- Feature: Export ---
-    function exportData() {
-        const studentName = studentNameInput.value.trim();
-        
-        saveCurrentState(); // Ensure latest state is captured
-        saveToLocalStorage(); // Ensure local is up to date too
-        
-        const exportPayload = {
-            studentName: studentName || "Anonymous",
-            timestamp: new Date().toISOString(),
-            casesData: appState.userData
-        };
-
-        const dataStr = JSON.stringify(exportPayload, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        
-        const exportFileDefaultName = `efl_conditionals_lab_${studentName ? studentName.replace(/\s+/g, '_') : 'work'}.json`;
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
     }
 
     // Start App
